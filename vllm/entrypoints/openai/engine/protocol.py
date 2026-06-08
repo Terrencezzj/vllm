@@ -343,7 +343,17 @@ class DeltaMessage(OpenAIBaseModel):
     role: str | None = None
     content: str | None = None
     reasoning: str | None = None
+    reasoning_content: str | None = None
     tool_calls: list[DeltaToolCall] = Field(default_factory=list)
+
+    def model_post_init(self, __context) -> None:
+        if self.reasoning_content is None and self.reasoning is not None:
+            self.reasoning_content = self.reasoning
+
+    def __setattr__(self, name: str, value: object) -> None:
+        super().__setattr__(name, value)
+        if name == "reasoning" and value is not None and self.reasoning_content is None:
+            super().__setattr__("reasoning_content", value)
 
 
 class GenerationError(Exception):
